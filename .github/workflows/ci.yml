@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04, macos-13, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Docker
+      uses: ./
+
+    - name: Verify Docker Installation
+      shell: bash
+      run: |
+        docker --version
+        docker info
+
+    - name: Test Docker Run
+      shell: bash
+      run: |
+        docker run hello-world
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: YAML Lint
+      uses: ibiqlik/action-yamllint@v3
+      with:
+        file_or_dir: action.yml
+        config_file: .yamllint.yml

@@ -31,8 +31,17 @@ steps:
 ## Operating System Support
 
 - Windows: Installs Docker Desktop
-- macOS: Installs Docker Desktop using Homebrew
+- macOS: Uses Colima (Intel/x86_64 only)
+  - Supported version: macOS 13 (Ventura)
 - Linux: Installs Docker Engine using apt package manager
+
+## System Requirements
+
+- Windows: Windows 10 or later
+- macOS:
+  - Architecture: Intel/x86_64 only
+  - Version: macOS 13 (Ventura)
+- Linux: Ubuntu 20.04 or later
 
 ## License
 
