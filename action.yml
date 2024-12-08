@@ -1,0 +1,61 @@
+name: 'Setup Docker on Windows/Linux/MacOS'
+description: 'Install Docker on Windows, macOS, or Linux'
+author: 'cpunion'
+
+inputs:
+  version:
+    description: 'Docker version to install (optional)'
+    required: false
+    default: 'latest'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Docker on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          ca-certificates \
+          curl \
+          gnupg \
+          lsb-release
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        sudo docker --version
+
+    - name: Install Docker on macOS
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        # Check architecture
+        if [ "$(uname -m)" != "x86_64" ]; then
+          echo "Error: This action only supports macOS on Intel/x86_64 architecture"
+          exit 1
+        fi
+
+        # Install Colima and Docker CLI
+        brew install colima docker
+        colima start
+
+        # Verify installation
+        docker --version
+        docker info
+
+    - name: Install Docker on Windows
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe -OutFile DockerInstaller.exe
+        Start-Process -Wait -FilePath .\DockerInstaller.exe -ArgumentList "install --quiet"
+        Remove-Item -Force DockerInstaller.exe
+        # Add Docker to PATH
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+        docker --version
